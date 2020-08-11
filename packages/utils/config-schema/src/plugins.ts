@@ -23,12 +23,12 @@ export const relevantConfigurations: PluginConfig[] = [
   },
   {
     file: '../../plugins/c-sharp/c-sharp/src/config.ts',
-    identifier: 'CSharpResolversPluginRawConfig',
+    identifier: 'PhpResolversPluginRawConfig',
     pluginName: 'c-sharp',
   },
   {
     file: '../../plugins/c-sharp/c-sharp-operations/src/config.ts',
-    identifier: 'CSharpOperationsRawPluginConfig',
+    identifier: 'PhpOperationsRawPluginConfig',
     pluginName: 'c-sharp-operations',
   },
   {
@@ -145,5 +145,15 @@ export const relevantConfigurations: PluginConfig[] = [
     file: '../../plugins/other/fragment-matcher/src/index.ts',
     identifier: 'FragmentMatcherConfig',
     pluginName: 'fragment-matcher',
+  },
+  {
+    file: '../../plugins/php/php/src/config.ts',
+    identifier: 'PhpResolversPluginRawConfig',
+    pluginName: 'php',
+  },
+  {
+    file: '../../plugins/php/php-operations/src/config.ts',
+    identifier: 'PhpOperationsRawPluginConfig',
+    pluginName: 'php-operations',
   },
 ];

@@ -67,6 +67,11 @@ module.exports = {
       },
       {
         type: 'category',
+        label: 'PHP',
+        items: ['plugins/php', 'plugins/php-operations'],
+      },
+      {
+        type: 'category',
         label: 'Utilities',
         items: [
           'plugins/fragment-matcher',
