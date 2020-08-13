@@ -18,9 +18,7 @@ export const plugin: PluginFunction<PhpResolversPluginRawConfig> = async (
   const astNode = parse(printedSchema);
   const visitorResult = visit(astNode, { leave: visitor as any });
   const imports = visitor.getImports();
-  const blockContent = visitorResult.definitions.filter(d => typeof d === 'string').join('\n');
-  const wrappedBlockContent = visitor.wrapWithClass(blockContent);
-  const wrappedContent = visitor.wrapWithNamespace(wrappedBlockContent);
-
-  return [imports, wrappedContent].join('\n');
+  const fileContent = visitorResult.definitions.filter(d => typeof d === 'string').join('\n');
+  const classContent = visitor.wrapWithClass(fileContent);
+  return visitor.prependFileHeader(imports, classContent);
 };

@@ -79,11 +79,15 @@ export class PhpResolversVisitor extends BaseVisitor<PhpResolversPluginRawConfig
     return allImports.map(i => `using ${i};`).join('\n') + '\n';
   }
 
-  public wrapWithNamespace(content: string): string {
-    return new PhpDeclarationBlock()
-      .asKind('namespace')
-      .withName(this.config.namespaceName)
-      .withBlock(indentMultiline(content)).string;
+  public prependFileHeader(imports: string, content: string): string {
+    return `<?php
+
+namespace ${this.config.namespaceName};
+
+${imports}
+
+${content}
+`;
   }
 
   public wrapWithClass(content: string): string {

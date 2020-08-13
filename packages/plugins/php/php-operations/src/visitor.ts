@@ -233,29 +233,29 @@ export class PhpOperationsVisitor extends ClientSideBaseVisitor<
     const obsoleteMessage = '/// <remarks>This method is obsolete. Use Request instead.</remarks>';
 
     const content = `
-    public class ${serviceName} {
-      /// <summary>
-      /// ${serviceName}.Request ${inputArgsHint}
-      /// </summary>
-      public static GraphQLRequest Request(${hasInputArgs ? 'object variables = null' : ''}) {
-        return new GraphQLRequest {
-          Query = ${this._getDocumentNodeVariable(node, documentVariableName)},
-          OperationName = "${node.name.value}"${
+public class ${serviceName} {
+  /// <summary>
+  /// ${serviceName}.Request ${inputArgsHint}
+  /// </summary>
+  public static GraphQLRequest Request(${hasInputArgs ? 'object variables = null' : ''}) {
+    return new GraphQLRequest {
+      Query = ${this._getDocumentNodeVariable(node, documentVariableName)},
+      OperationName = "${node.name.value}"${
       hasInputArgs
         ? `,
           Variables = variables`
         : ''
     }
-        };
-      }
+    };
+  }
 
-      ${obsoleteMessage}
-      public static GraphQLRequest get${serviceName}() {
-        return Request();
-      }
-      ${this._namedClient(node)}
-      ${documentString}
-    }
+  ${obsoleteMessage}
+  public static GraphQLRequest get${serviceName}() {
+    return Request();
+  }
+  ${this._namedClient(node)}
+  ${documentString}
+}
     `;
     return [content].filter(a => a).join('\n');
   }

@@ -4,7 +4,7 @@ import { transformComment } from './utils';
 const stripIndent = require('strip-indent');
 
 export type Access = 'private' | 'public' | 'protected';
-export type Kind = 'namespace' | 'class' | 'interface' | 'enum';
+export type Kind = 'class' | 'interface' | 'enum';
 export type MemberFlags = { final?: boolean; static?: boolean };
 export type ClassMember = {
   value: string;
@@ -203,29 +203,25 @@ ${indentMultiline(method.implementation)}
         name = this._name;
       }
 
-      if (this._kind === 'namespace') {
-        result += `${this._kind} ${name} `;
-      } else {
-        let extendStr = '';
-        let implementsStr = '';
-        let annotatesStr = '';
-        const final = this._final ? ' final' : '';
-        const isStatic = this._static ? ' static' : '';
+      let extendStr = '';
+      let implementsStr = '';
+      let annotatesStr = '';
+      const final = this._final ? ' final' : '';
+      const isStatic = this._static ? ' static' : '';
 
-        if (this._extendStr.length > 0) {
-          extendStr = ` : ${this._extendStr.join(', ')}`;
-        }
-
-        if (this._implementsStr.length > 0) {
-          implementsStr = ` : ${this._implementsStr.join(', ')}`;
-        }
-
-        if (this._annotations.length > 0) {
-          annotatesStr = this._annotations.map(a => `@${a}`).join('\n') + '\n';
-        }
-
-        result += `${annotatesStr}${this._access}${isStatic}${final} ${this._kind} ${name}${extendStr}${implementsStr} `;
+      if (this._extendStr.length > 0) {
+        extendStr = ` : ${this._extendStr.join(', ')}`;
       }
+
+      if (this._implementsStr.length > 0) {
+        implementsStr = ` : ${this._implementsStr.join(', ')}`;
+      }
+
+      if (this._annotations.length > 0) {
+        annotatesStr = this._annotations.map(a => `@${a}`).join('\n') + '\n';
+      }
+
+      result += `${annotatesStr}${this._access}${isStatic}${final} ${this._kind} ${name}${extendStr}${implementsStr} `;
     }
 
     const members = this._members.length

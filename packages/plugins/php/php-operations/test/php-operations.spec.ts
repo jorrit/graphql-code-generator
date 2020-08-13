@@ -5,8 +5,21 @@ import { PhpOperationsRawPluginConfig } from '../src/config';
 import { Types } from '@graphql-codegen/plugin-helpers';
 
 describe('PHP Operations', () => {
+  describe('File format', () => {
+    it('Should include PHP open tag', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        enum ns {
+          dummy
+        }
+      `);
+      const result = (await plugin(schema, [], {}, { outputFile: '' })) as Types.ComplexPluginOutput;
+
+      expect(result.content).toMatch(/<?php\n\n/);
+    });
+  });
+
   describe('Namespaces', () => {
-    it('Should wrap generated code block in namespace using default name', async () => {
+    it('Should prepend generated code block with namespace using default name', async () => {
       const schema = buildSchema(/* GraphQL */ `
         type Query {
           me: Int!
@@ -23,10 +36,10 @@ describe('PHP Operations', () => {
         {},
         { outputFile: '' }
       )) as Types.ComplexPluginOutput;
-      expect(result.content).toContain('namespace GraphQLCodeGen {');
+      expect(result.content).toContain('namespace GraphQLCodeGen;');
     });
 
-    it('Should wrap generated code block in namespace using a custom name', async () => {
+    it('Should prepend generated code block with namespace using a custom name', async () => {
       const schema = buildSchema(/* GraphQL */ `
         type Query {
           me: Int!
@@ -43,7 +56,7 @@ describe('PHP Operations', () => {
       const result = (await plugin(schema, [{ location: '', document: operation }], config, {
         outputFile: '',
       })) as Types.ComplexPluginOutput;
-      expect(result.content).toContain('namespace MyCompany.MyGeneratedGql {');
+      expect(result.content).toContain('namespace MyCompany.MyGeneratedGql;');
     });
   });
 

@@ -26,12 +26,13 @@ export const plugin: PluginFunction<PhpOperationsRawPluginConfig> = (
 
   const visitor = new PhpOperationsVisitor(schema, allFragments, config, documents);
   const visitorResult = visit(allAst, { leave: visitor });
-  const openNameSpace = `namespace ${visitor.config.namespaceName} {`;
+  const header = `<?php
+
+namespace ${visitor.config.namespaceName};
+`;
   return {
     prepend: [],
-    content: [openNameSpace, ...visitorResult.definitions.filter(t => typeof t === 'string'), '}']
-      .filter(a => a)
-      .join('\n'),
+    content: [header, ...visitorResult.definitions.filter(t => typeof t === 'string')].filter(a => a).join('\n'),
   };
 };
 

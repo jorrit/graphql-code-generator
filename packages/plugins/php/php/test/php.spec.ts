@@ -4,8 +4,21 @@ import { plugin } from '../src/index';
 import { PhpResolversPluginRawConfig } from '../src/config';
 
 describe('PHP', () => {
+  describe('File format', () => {
+    it('Should include PHP open tag', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        enum ns {
+          dummy
+        }
+      `);
+      const result = await plugin(schema, [], {}, { outputFile: '' });
+
+      expect(result).toMatch(/<?php\n\n/);
+    });
+  });
+
   describe('Using directives', () => {
-    it('Should include dotnet using directives', async () => {
+    it.skip('Should include dotnet using directives', async () => {
       const schema = buildSchema(/* GraphQL */ `
         enum ns {
           dummy
@@ -21,28 +34,28 @@ describe('PHP', () => {
   });
 
   describe('Namespaces', () => {
-    it('Should wrap generated code block in namespace using default name', async () => {
+    it('Should prepend generated code block with namespace using default name', async () => {
       const schema = buildSchema(/* GraphQL */ `
         enum ns {
           dummy
         }
       `);
       const result = await plugin(schema, [], {}, { outputFile: '' });
-      expect(result).toContain('namespace GraphQLCodeGen {');
+      expect(result).toContain('namespace GraphQLCodeGen;');
     });
 
-    it('Should wrap generated code block in namespace using custom name', async () => {
+    it('Should prepend generated code block with namespace using custom name', async () => {
       const schema = buildSchema(/* GraphQL */ `
         enum ns {
           dummy
         }
       `);
       const result = await plugin(schema, [], { namespaceName: 'MyCompany.MyGeneratedGql' }, { outputFile: '' });
-      expect(result).toContain('namespace MyCompany.MyGeneratedGql {');
+      expect(result).toContain('namespace MyCompany.MyGeneratedGql;');
     });
   });
 
-  describe('Enums', () => {
+  describe.skip('Enums', () => {
     describe('Basic conversion', () => {
       it('Should convert enums to PHP enums', async () => {
         const schema = buildSchema(/* GraphQL */ `
