@@ -255,18 +255,15 @@ export class PhpResolversVisitor extends BaseVisitor<PhpResolversPluginRawConfig
         const fieldHeader = this.getFieldHeader(arg, fieldType);
         const fieldName = this.convertSafeName(arg.name);
         const phpFieldType = wrapFieldType(fieldType, fieldType.listType, this.config.listType);
-        return fieldHeader + indent(`public ${phpFieldType} ${fieldName} { get; set; }`);
+        return fieldHeader + indent(`public ${phpFieldType} $${fieldName};`);
       })
       .join('\n\n');
 
     return `
-#region ${name}
 ${classSummary}public class ${this.convertSafeName(name)}${interfaceImpl} {
-  #region members
 ${classMembers}
-  #endregion
 }
-#endregion`;
+`;
   }
 
   protected buildInterface(
@@ -281,7 +278,7 @@ ${classMembers}
         const fieldHeader = this.getFieldHeader(arg, fieldType);
         const fieldName = this.convertSafeName(arg.name);
         const phpFieldType = wrapFieldType(fieldType, fieldType.listType, this.config.listType);
-        return fieldHeader + indent(`public ${phpFieldType} ${fieldName} { get; set; }`);
+        return fieldHeader + indent(`public ${phpFieldType} $${fieldName};`);
       })
       .join('\n\n');
 
@@ -303,18 +300,14 @@ ${classMembers}
         const fieldHeader = this.getFieldHeader(arg, fieldType);
         const fieldName = this.convertSafeName(arg.name);
         const phpFieldType = wrapFieldType(fieldType, fieldType.listType, this.config.listType);
-        return fieldHeader + indent(`public ${phpFieldType} ${fieldName} { get; set; }`);
+        return fieldHeader + indent(`public ${phpFieldType} $${fieldName};`);
       })
       .join('\n\n');
 
     return `
-#region ${name}
 ${classSummary}public class ${this.convertSafeName(name)} {
-  #region members
 ${classMembers}
-  #endregion
 
-  #region methods
   public dynamic GetInputObject()
   {
     IDictionary<string, object> d = new System.Dynamic.ExpandoObject();
@@ -333,9 +326,8 @@ ${classMembers}
     }
     return d;
   }
-  #endregion
 }
-#endregion`;
+`;
   }
 
   InputObjectTypeDefinition(node: InputObjectTypeDefinitionNode): string {

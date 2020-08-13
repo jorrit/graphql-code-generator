@@ -167,7 +167,7 @@ describe('PHP', () => {
             @public,
             @private,
             @protected,
-            @internal
+            internal
         `);
       });
     });
@@ -193,8 +193,8 @@ describe('PHP', () => {
       `);
       const result = await plugin(schema, [], {}, { outputFile: '' });
       expect(result).toBeSimilarStringTo(`
-        public int? id { get; set; }
-        public string email { get; set; }
+        public ?int $id;
+        public string $email;
       `);
     });
 
@@ -233,7 +233,7 @@ describe('PHP', () => {
         /// User id
         /// </summary>
         [JsonRequired]
-        public int id { get; set; }
+        public int $id;
       `);
     });
   });
@@ -295,9 +295,9 @@ describe('PHP', () => {
       const result = await plugin(schema, [], {}, { outputFile: '' });
       expect(result).toBeSimilarStringTo(`
         [JsonProperty("id")]
-        public int? id { get; set; }
+        public ?int $id;
         [JsonProperty("email")]
-        public string email { get; set; }
+        public string $email;
       `);
     });
 
@@ -326,7 +326,7 @@ describe('PHP', () => {
         /// User id
         /// </summary>
         [JsonProperty("id")]
-        public int id { get; set; }
+        public int $id;
       `);
     });
 
@@ -342,24 +342,24 @@ describe('PHP', () => {
       expect(result).toBeSimilarStringTo(`
         [Obsolete("Field no longer supported")]
         [JsonProperty("age")]
-        public int? age { get; set; }
+        public ?int $age;
       `);
       expect(result).toBeSimilarStringTo(`
         [Obsolete("Field is obsolete, use id")]
         [JsonProperty("refid")]
-        public string refid { get; set; }
+        public string $refid;
       `);
     });
 
     it('Should prefix class name with @ when type name is a reserved keyword', async () => {
       const schema = buildSchema(/* GraphQL */ `
-        type object {
+        type class {
           id: Int!
         }
       `);
       const result = await plugin(schema, [], {}, { outputFile: '' });
 
-      expect(result).toContain('public class @object {');
+      expect(result).toContain('public class @class {');
     });
   });
 
@@ -412,15 +412,15 @@ describe('PHP', () => {
 
         expect(result).toBeSimilarStringTo(`
           [JsonRequired]
-          public int intReq { get; set; }
+          public int $intReq;
           [JsonRequired]
-          public float fltReq { get; set; }
+          public float $fltReq;
           [JsonRequired]
-          public string idReq { get; set; }
+          public string $idReq;
           [JsonRequired]
-          public string strReq { get; set; }
+          public string $strReq;
           [JsonRequired]
-          public bool boolReq { get; set; }
+          public bool $boolReq;
         `);
       });
 
@@ -437,11 +437,11 @@ describe('PHP', () => {
         const result = await plugin(schema, [], {}, { outputFile: '' });
 
         expect(result).toBeSimilarStringTo(`
-          public int? intOpt { get; set; }
-          public float? fltOpt { get; set; }
-          public string idOpt { get; set; }
-          public string strOpt { get; set; }
-          public bool? boolOpt { get; set; }
+          public ?int $intOpt;
+          public ?float $fltOpt;
+          public string $idOpt;
+          public string $strOpt;
+          public ?bool $boolOpt;
         `);
       });
     });
@@ -454,7 +454,7 @@ describe('PHP', () => {
           }
         `);
         const result = await plugin(schema, [], {}, { outputFile: '' });
-        expect(result).toBeSimilarStringTo('public List<int> arr { get; set; }');
+        expect(result).toBeSimilarStringTo('public List<int> $arr;');
       });
 
       it('Should use custom list type for arrays when listType is specified', async () => {
@@ -464,10 +464,10 @@ describe('PHP', () => {
           }
         `);
         const result1 = await plugin(schema, [], { listType: 'IEnumerable' }, { outputFile: '' });
-        expect(result1).toContain('public IEnumerable<int> arr { get; set; }');
+        expect(result1).toContain('public IEnumerable<int> $arr;');
 
         const result2 = await plugin(schema, [], { listType: 'HashSet' }, { outputFile: '' });
-        expect(result2).toContain('public HashSet<int> arr { get; set; }');
+        expect(result2).toContain('public HashSet<int> $arr;');
       });
 
       it('Should use correct array inner types', async () => {
@@ -485,12 +485,12 @@ describe('PHP', () => {
         const result = await plugin(schema, [], config, { outputFile: '' });
 
         expect(result).toBeSimilarStringTo(`
-          public IEnumerable<int> arr1 { get; set; }
-          public IEnumerable<float?> arr2 { get; set; }
+          public IEnumerable<int> $arr1;
+          public IEnumerable<?float> $arr2;
           [JsonRequired]
-          public IEnumerable<int?> arr3 { get; set; }
+          public IEnumerable<?int> $arr3;
           [JsonRequired]
-          public IEnumerable<bool> arr4 { get; set; }
+          public IEnumerable<bool> $arr4;
         `);
       });
 
@@ -511,11 +511,11 @@ describe('PHP', () => {
         const result = await plugin(schema, [], config, { outputFile: '' });
 
         expect(result).toBeSimilarStringTo(`
-          public IEnumerable<IEnumerable<int>> arr1 { get; set; }
+          public IEnumerable<IEnumerable<int>> $arr1;
           [JsonRequired]
-          public IEnumerable<IEnumerable<IEnumerable<float?>>> arr2 { get; set; }
+          public IEnumerable<IEnumerable<IEnumerable<?float>>> $arr2;
           [JsonRequired]
-          public IEnumerable<IEnumerable<Complex>> arr3 { get; set; }
+          public IEnumerable<IEnumerable<Complex>> $arr3;
         `);
       });
     });
@@ -533,10 +533,10 @@ describe('PHP', () => {
         const result = await plugin(schema, [], {}, { outputFile: '' });
 
         expect(result).toBeSimilarStringTo(`
-          public int? @int { get; set; }
-          public float? @float { get; set; }
-          public string @string { get; set; }
-          public bool? @bool { get; set; }
+          public ?int $int;
+          public ?float $float;
+          public string $string;
+          public ?bool $bool;
         `);
       });
     });
@@ -564,11 +564,11 @@ describe('PHP', () => {
       const result = await plugin(schema, [], config, { outputFile: '' });
 
       expect(result).toBeSimilarStringTo(`
-        public int? val { get; set; }
-        public float? flt { get; set; }
-        public string str { get; set; }
-        public bool? flag { get; set; }
-        public Length? hair { get; set; }
+        public ?int $val;
+        public ?float $flt;
+        public string $str;
+        public ?bool $flag;
+        public ?Length $hair;
       `);
     });
 
@@ -587,10 +587,10 @@ describe('PHP', () => {
       const result = await plugin(schema, [], config, { outputFile: '' });
 
       expect(result).toBeSimilarStringTo(`
-        public HashSet<int?> arr1 { get; set; }
-        public HashSet<int> arr2 { get; set; }
-        public HashSet<string> arr3 { get; set; }
-        public HashSet<string> arr4 { get; set; }
+        public HashSet<?int> $arr1;
+        public HashSet<int> $arr2;
+        public HashSet<string> $arr3;
+        public HashSet<string> $arr4;
       `);
     });
   });

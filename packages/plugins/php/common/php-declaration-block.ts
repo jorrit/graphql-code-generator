@@ -5,7 +5,7 @@ const stripIndent = require('strip-indent');
 
 export type Access = 'private' | 'public' | 'protected';
 export type Kind = 'namespace' | 'class' | 'interface' | 'enum';
-export type MemberFlags = { transient?: boolean; final?: boolean; volatile?: boolean; static?: boolean };
+export type MemberFlags = { final?: boolean; static?: boolean };
 export type ClassMember = {
   value: string;
   name: string;
@@ -115,8 +115,6 @@ export class PhpDeclarationBlock {
       member.access,
       flags.static ? 'static' : null,
       flags.final ? 'final' : null,
-      flags.transient ? 'transient' : null,
-      flags.volatile ? 'volatile' : null,
       ...(member.annotations || []).map(annotation => `@${annotation}`),
       member.type,
       member.name,
@@ -131,8 +129,6 @@ export class PhpDeclarationBlock {
       method.access,
       method.flags.static ? 'static' : null,
       method.flags.final ? 'final' : null,
-      method.flags.transient ? 'transient' : null,
-      method.flags.volatile ? 'volatile' : null,
       ...(method.returnTypeAnnotations || []).map(annotation => `@${annotation}`),
       method.returnType,
       method.name,
@@ -161,8 +157,6 @@ ${indentMultiline(method.implementation)}
       access,
       flags: {
         final: false,
-        transient: false,
-        volatile: false,
         static: false,
         ...flags,
       },
@@ -190,8 +184,6 @@ ${indentMultiline(method.implementation)}
       access,
       flags: {
         final: false,
-        transient: false,
-        volatile: false,
         static: false,
         ...flags,
       },

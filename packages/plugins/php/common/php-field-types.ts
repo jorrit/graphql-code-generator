@@ -24,7 +24,7 @@ export class PhpFieldType implements PhpField {
 
   get innerTypeName(): string {
     const nullable = this.baseType.valueType && !this.baseType.required ? '?' : '';
-    return `${this.baseType.type}${nullable}`;
+    return `${nullable}${this.baseType.type}`;
   }
 
   get isOuterTypeRequired(): boolean {
