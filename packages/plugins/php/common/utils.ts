@@ -19,7 +19,7 @@ export function transformComment(comment: string | StringValueNode, indentLevel 
   }
   comment = comment.trimStart().split('*/').join('*\\/');
   let lines = comment.split('\n');
-  lines = ['/// <summary>', ...lines.map(line => `/// ${line}`), '/// </summary>'];
+  lines = ['/**', ...lines.map(line => ` * ${line}`), ' */'];
   return lines
     .map(line => indent(line, indentLevel))
     .concat('')

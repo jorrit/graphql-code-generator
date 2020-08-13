@@ -582,11 +582,11 @@ describe('PHP Operations', () => {
         { outputFile: '' }
       )) as Types.ComplexPluginOutput;
       expect(result.content).toBeSimilarStringTo(`
-        /// <summary>
-        /// RunScalarGQL.Request
-        /// <para>Required variables:<br/> { idr=(int), namer=(string), flagr=(bool), fltr=(float)  }</para>
-        /// <para>Optional variables:<br/> { id=(int), name=(string), flag=(bool), flt=(float) }</para>
-        /// </summary>
+        /**
+         * RunScalarGQL.Request
+         * <para>Required variables:<br/> { idr=(int), namer=(string), flagr=(bool), fltr=(float)  }</para>
+         * <para>Optional variables:<br/> { id=(int), name=(string), flag=(bool), flt=(float) }</para>
+         */
       `);
     });
 
@@ -616,11 +616,11 @@ describe('PHP Operations', () => {
         { outputFile: '' }
       )) as Types.ComplexPluginOutput;
       expect(result.content).toBeSimilarStringTo(`
-        /// <summary>
-        /// RunComplexGQL.Request
-        /// <para>Required variables:<br/> { arr=(string[]) }</para>
-        /// <para>Optional variables:<br/> { sort=(SortBy), complex=(Data), multi=(string[][][]) }</para>
-        /// </summary>
+        /**
+         * RunComplexGQL.Request
+         * <para>Required variables:<br/> { arr=(string[]) }</para>
+         * <para>Optional variables:<br/> { sort=(SortBy), complex=(Data), multi=(string[][][]) }</para>
+         */
       `);
     });
 
@@ -643,9 +643,9 @@ describe('PHP Operations', () => {
         { outputFile: '' }
       )) as Types.ComplexPluginOutput;
       expect(result.content).toBeSimilarStringTo(`
-        /// <summary>
-        /// RunSimpleGQL.Request
-        /// </summary>
+        /**
+         * RunSimpleGQL.Request
+         */
       `);
     });
   });

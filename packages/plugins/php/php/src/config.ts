@@ -32,21 +32,6 @@ export interface PhpResolversPluginRawConfig extends RawConfig {
    */
   namespaceName?: string;
   /**
-   * @default Types
-   * @description Allow you to customize the parent class name.
-   *
-   * @exampleMarkdown
-   * ```yml
-   * generates:
-   *   src/main/php/my-org/my-app/MyGeneratedTypes.php:
-   *     plugins:
-   *       - php
-   *     config:
-   *       className: MyGeneratedTypes
-   * ```
-   */
-  className?: string;
-  /**
    * @default IEnumberable
    * @description Allow you to customize the list type
    *

@@ -30,7 +30,7 @@ export class PhpDeclarationBlock {
   _extendStr: string[] = [];
   _implementsStr: string[] = [];
   _kind: Kind = null;
-  _access: Access = 'public';
+  _access: Access = null;
   _final = false;
   _static = false;
   _block = null;
@@ -46,7 +46,7 @@ export class PhpDeclarationBlock {
     return this;
   }
 
-  access(access: Access): PhpDeclarationBlock {
+  access(access: Access | null): PhpDeclarationBlock {
     this._access = access;
 
     return this;

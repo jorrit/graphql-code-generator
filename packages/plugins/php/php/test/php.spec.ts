@@ -194,7 +194,7 @@ describe('PHP', () => {
         }
       `);
       const result = await plugin(schema, [], {}, { outputFile: '' });
-      expect(result).toContain('public class UserInput {');
+      expect(result).toContain('class UserInput {');
     });
 
     it('Should generate properties for input type fields', async () => {
@@ -211,7 +211,7 @@ describe('PHP', () => {
       `);
     });
 
-    it('Should generate PHP method for creating input object', async () => {
+    it.skip('Should generate PHP method for creating input object', async () => {
       const schema = buildSchema(/* GraphQL */ `
         input UserInput {
           id: Int
@@ -236,16 +236,15 @@ describe('PHP', () => {
       const result = await plugin(schema, [], {}, { outputFile: '' });
 
       expect(result).toBeSimilarStringTo(`
-        /// <summary>
-        /// User Input values
-        /// </summary>
-        public class UserInput {
+        /**
+         * User Input values
+         */
+        class UserInput {
       `);
       expect(result).toBeSimilarStringTo(`
-        /// <summary>
-        /// User id
-        /// </summary>
-        [JsonRequired]
+        /**
+         * User id
+         */
         public int $id;
       `);
     });
@@ -259,43 +258,7 @@ describe('PHP', () => {
         }
       `);
       const result = await plugin(schema, [], {}, { outputFile: '' });
-      expect(result).toContain('public class User {');
-    });
-
-    it('Should wrap generated classes in Type class', async () => {
-      const schema = buildSchema(/* GraphQL */ `
-        type User {
-          id: Int
-        }
-      `);
-      const result = await plugin(schema, [], {}, { outputFile: '' });
-      expect(result).toContain('public class Types {');
-    });
-
-    it('Should wrap generated classes in custom Type class name', async () => {
-      const schema = buildSchema(/* GraphQL */ `
-        type User {
-          id: Int
-        }
-      `);
-      const config: PhpResolversPluginRawConfig = {
-        className: 'MyGqlTypes',
-      };
-      const result = await plugin(schema, [], config, { outputFile: '' });
-      expect(result).toContain('public class MyGqlTypes {');
-    });
-
-    it('Should prefix wrap name with @ when custom class name is a reserved keyword', async () => {
-      const schema = buildSchema(/* GraphQL */ `
-        type User {
-          id: Int
-        }
-      `);
-      const config: PhpResolversPluginRawConfig = {
-        className: 'public',
-      };
-      const result = await plugin(schema, [], config, { outputFile: '' });
-      expect(result).toContain('public class @public {');
+      expect(result).toContain('class User {');
     });
 
     it('Should generate properties for types', async () => {
@@ -307,14 +270,12 @@ describe('PHP', () => {
       `);
       const result = await plugin(schema, [], {}, { outputFile: '' });
       expect(result).toBeSimilarStringTo(`
-        [JsonProperty("id")]
         public ?int $id;
-        [JsonProperty("email")]
         public string $email;
       `);
     });
 
-    it('Should generate summary header for class and properties', async () => {
+    it('Should generate code comment for class and properties', async () => {
       const schema = buildSchema(/* GraphQL */ `
         """
         User values
@@ -329,21 +290,20 @@ describe('PHP', () => {
       const result = await plugin(schema, [], {}, { outputFile: '' });
 
       expect(result).toBeSimilarStringTo(`
-        /// <summary>
-        /// User values
-        /// </summary>
-        public class User {
+        /**
+         * User values
+         */
+        class User {
       `);
       expect(result).toBeSimilarStringTo(`
-        /// <summary>
-        /// User id
-        /// </summary>
-        [JsonProperty("id")]
+        /**
+         * User id
+         */
         public int $id;
       `);
     });
 
-    it('Should mark deprecated properties with Obsolete attribute', async () => {
+    it('Should mark deprecated properties with @deprecated comment', async () => {
       const schema = buildSchema(/* GraphQL */ `
         type User {
           age: Int @deprecated
@@ -353,13 +313,15 @@ describe('PHP', () => {
       const result = await plugin(schema, [], {}, { outputFile: '' });
 
       expect(result).toBeSimilarStringTo(`
-        [Obsolete("Field no longer supported")]
-        [JsonProperty("age")]
+        /**
+         * @deprecated Field no longer supported
+         */
         public ?int $age;
       `);
       expect(result).toBeSimilarStringTo(`
-        [Obsolete("Field is obsolete, use id")]
-        [JsonProperty("refid")]
+        /**
+         * @deprecated Field is obsolete, use id
+         */
         public string $refid;
       `);
     });
@@ -372,7 +334,7 @@ describe('PHP', () => {
       `);
       const result = await plugin(schema, [], {}, { outputFile: '' });
 
-      expect(result).toContain('public class @class {');
+      expect(result).toContain('class @class {');
     });
   });
 
@@ -385,7 +347,7 @@ describe('PHP', () => {
       `);
       const result = await plugin(schema, [], {}, { outputFile: '' });
 
-      expect(result).toContain('public interface Node {');
+      expect(result).toContain('interface Node {');
     });
 
     it('Should generate PHP class that implements given interfaces', async () => {
@@ -404,8 +366,8 @@ describe('PHP', () => {
       `);
       const result = await plugin(schema, [], {}, { outputFile: '' });
 
-      expect(result).toContain('public interface INode {');
-      expect(result).toContain('public class User : INode, INameNode {');
+      expect(result).toContain('interface INode {');
+      expect(result).toContain('class User implements INode, INameNode {');
     });
   });
 
@@ -424,15 +386,10 @@ describe('PHP', () => {
         const result = await plugin(schema, [], {}, { outputFile: '' });
 
         expect(result).toBeSimilarStringTo(`
-          [JsonRequired]
           public int $intReq;
-          [JsonRequired]
           public float $fltReq;
-          [JsonRequired]
           public string $idReq;
-          [JsonRequired]
           public string $strReq;
-          [JsonRequired]
           public bool $boolReq;
         `);
       });
@@ -500,9 +457,7 @@ describe('PHP', () => {
         expect(result).toBeSimilarStringTo(`
           public IEnumerable<int> $arr1;
           public IEnumerable<?float> $arr2;
-          [JsonRequired]
           public IEnumerable<?int> $arr3;
-          [JsonRequired]
           public IEnumerable<bool> $arr4;
         `);
       });
@@ -525,9 +480,7 @@ describe('PHP', () => {
 
         expect(result).toBeSimilarStringTo(`
           public IEnumerable<IEnumerable<int>> $arr1;
-          [JsonRequired]
           public IEnumerable<IEnumerable<IEnumerable<?float>>> $arr2;
-          [JsonRequired]
           public IEnumerable<IEnumerable<Complex>> $arr3;
         `);
       });

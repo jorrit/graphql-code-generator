@@ -2,10 +2,10 @@ import {
   ParsedConfig,
   BaseVisitor,
   EnumValuesMap,
-  indentMultiline,
   indent,
   buildScalars,
   getBaseTypeNode,
+  indentMultiline,
 } from '@graphql-codegen/visitor-plugin-common';
 import { PhpResolversPluginRawConfig } from './config';
 import {
@@ -41,7 +41,6 @@ import {
 
 export interface PhpResolverParsedConfig extends ParsedConfig {
   namespaceName: string;
-  className: string;
   listType: string;
   enumValues: EnumValuesMap;
 }
@@ -54,7 +53,6 @@ export class PhpResolversVisitor extends BaseVisitor<PhpResolversPluginRawConfig
       enumValues: rawConfig.enumValues || {},
       listType: rawConfig.listType || 'List',
       namespaceName: rawConfig.namespaceName || 'GraphQLCodeGen',
-      className: rawConfig.className || 'Types',
       scalars: buildScalars(_schema, rawConfig.scalars, PHP_SCALARS),
     });
   }
@@ -90,14 +88,6 @@ ${content}
 `;
   }
 
-  public wrapWithClass(content: string): string {
-    return new PhpDeclarationBlock()
-      .access('public')
-      .asKind('class')
-      .withName(this.convertSafeName(this.config.className))
-      .withBlock(indentMultiline(content)).string;
-  }
-
   protected getEnumValue(enumName: string, enumOption: string): string {
     if (
       this.config.enumValues[enumName] &&
@@ -131,39 +121,21 @@ ${content}
       .withBlock(enumBlock).string;
   }
 
-  getFieldHeader(
-    node: InputValueDefinitionNode | FieldDefinitionNode | EnumValueDefinitionNode,
-    fieldType?: PhpFieldType
-  ): string {
-    const attributes = [];
-    const commentText = transformComment(node.description?.value);
+  getFieldHeader(node: InputValueDefinitionNode | FieldDefinitionNode | EnumValueDefinitionNode): string {
+    const commentText = node.description?.value || '';
+    const annotations = [];
 
     const deprecationDirective = node.directives.find(v => v.name?.value === 'deprecated');
     if (deprecationDirective) {
       const deprecationReason = this.getDeprecationReason(deprecationDirective);
-      attributes.push(`[Obsolete("${deprecationReason}")]`);
+      annotations.push(`@deprecated ${deprecationReason}`);
     }
 
-    if (node.kind === Kind.FIELD_DEFINITION) {
-      attributes.push(`[JsonProperty("${node.name.value}")]`);
-    }
+    return transformComment(
+      `${commentText}
 
-    if (node.kind === Kind.INPUT_VALUE_DEFINITION && fieldType.isOuterTypeRequired) {
-      attributes.push(`[JsonRequired]`);
-    }
-
-    if (commentText || attributes.length > 0) {
-      const summary = commentText ? indentMultiline(commentText.trimRight()) + '\n' : '';
-      const attributeLines =
-        attributes.length > 0
-          ? attributes
-              .map(attr => indent(attr))
-              .concat('')
-              .join('\n')
-          : '';
-      return summary + attributeLines;
-    }
-    return '';
+${annotations.join('\n')}`.trim()
+    );
   }
 
   getDeprecationReason(directive: DirectiveNode): string {
@@ -252,19 +224,19 @@ ${content}
   ): string {
     const classSummary = transformComment(description?.value);
     const interfaceImpl =
-      interfaces && interfaces.length > 0 ? ` : ${interfaces.map(ntn => ntn.name.value).join(', ')}` : '';
+      interfaces && interfaces.length > 0 ? ` implements ${interfaces.map(ntn => ntn.name.value).join(', ')}` : '';
     const classMembers = inputValueArray
       .map(arg => {
         const fieldType = this.resolveInputFieldType(arg.type);
-        const fieldHeader = this.getFieldHeader(arg, fieldType);
+        const fieldHeader = this.getFieldHeader(arg);
         const fieldName = this.convertSafeName(arg.name);
         const phpFieldType = wrapFieldType(fieldType, fieldType.listType, this.config.listType);
-        return fieldHeader + indent(`public ${phpFieldType} $${fieldName};`);
+        return indentMultiline(`${fieldHeader}public ${phpFieldType} $${fieldName};`);
       })
       .join('\n\n');
 
     return `
-${classSummary}public class ${this.convertSafeName(name)}${interfaceImpl} {
+${classSummary}class ${this.convertSafeName(name)}${interfaceImpl} {
 ${classMembers}
 }
 `;
@@ -279,15 +251,15 @@ ${classMembers}
     const classMembers = inputValueArray
       .map(arg => {
         const fieldType = this.resolveInputFieldType(arg.type);
-        const fieldHeader = this.getFieldHeader(arg, fieldType);
+        const fieldHeader = this.getFieldHeader(arg);
         const fieldName = this.convertSafeName(arg.name);
         const phpFieldType = wrapFieldType(fieldType, fieldType.listType, this.config.listType);
-        return fieldHeader + indent(`public ${phpFieldType} $${fieldName};`);
+        return indentMultiline(`${fieldHeader}public ${phpFieldType} $${fieldName};`);
       })
       .join('\n\n');
 
     return `
-${classSummary}public interface ${this.convertSafeName(name)} {
+${classSummary}interface ${this.convertSafeName(name)} {
 ${classMembers}
 }`;
   }
@@ -301,18 +273,18 @@ ${classMembers}
     const classMembers = inputValueArray
       .map(arg => {
         const fieldType = this.resolveInputFieldType(arg.type, !!arg.defaultValue);
-        const fieldHeader = this.getFieldHeader(arg, fieldType);
+        const fieldHeader = this.getFieldHeader(arg);
         const fieldName = this.convertSafeName(arg.name);
         const phpFieldType = wrapFieldType(fieldType, fieldType.listType, this.config.listType);
-        return fieldHeader + indent(`public ${phpFieldType} $${fieldName};`);
+        return indentMultiline(`${fieldHeader}public ${phpFieldType} $${fieldName};`);
       })
       .join('\n\n');
 
     return `
-${classSummary}public class ${this.convertSafeName(name)} {
+${classSummary}class ${this.convertSafeName(name)} {
 ${classMembers}
 
-  public dynamic GetInputObject()
+  public dynamic GetInputObject().0
   {
     IDictionary<string, object> d = new System.Dynamic.ExpandoObject();
 

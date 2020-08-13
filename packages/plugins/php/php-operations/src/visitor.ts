@@ -219,14 +219,14 @@ export class PhpOperationsVisitor extends ClientSideBaseVisitor<
     const hasInputArgs = !!inputSignatures?.length;
     const inputArgsHint = hasInputArgs
       ? `
-      /// <para>Required variables:<br/> { ${inputSignatures
-        .filter(sig => sig.required)
-        .map(sig => sig.signature)
-        .join(', ')} }</para>
-      /// <para>Optional variables:<br/> { ${inputSignatures
-        .filter(sig => !sig.required)
-        .map(sig => sig.signature)
-        .join(', ')} }</para>`
+   * <para>Required variables:<br/> { ${inputSignatures
+     .filter(sig => sig.required)
+     .map(sig => sig.signature)
+     .join(', ')} }</para>
+   * <para>Optional variables:<br/> { ${inputSignatures
+     .filter(sig => !sig.required)
+     .map(sig => sig.signature)
+     .join(', ')} }</para>`
       : '';
 
     // Should use ObsoleteAttribute but VS treats warnings as errors which would be super annoying so use remarks comment instead
@@ -234,9 +234,9 @@ export class PhpOperationsVisitor extends ClientSideBaseVisitor<
 
     const content = `
 public class ${serviceName} {
-  /// <summary>
-  /// ${serviceName}.Request ${inputArgsHint}
-  /// </summary>
+  /**
+   * ${serviceName}.Request ${inputArgsHint}
+   */
   public static GraphQLRequest Request(${hasInputArgs ? 'object variables = null' : ''}) {
     return new GraphQLRequest {
       Query = ${this._getDocumentNodeVariable(node, documentVariableName)},
