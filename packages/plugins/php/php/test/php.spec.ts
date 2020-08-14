@@ -207,7 +207,7 @@ describe('PHP', () => {
       const result = await plugin(schema, [], {}, { outputFile: '' });
       expect(result).toBeSimilarStringTo(`
         public ?int $id;
-        public string $email;
+        public ?string $email;
       `);
     });
 
@@ -271,7 +271,7 @@ describe('PHP', () => {
       const result = await plugin(schema, [], {}, { outputFile: '' });
       expect(result).toBeSimilarStringTo(`
         public ?int $id;
-        public string $email;
+        public ?string $email;
       `);
     });
 
@@ -322,7 +322,7 @@ describe('PHP', () => {
         /**
          * @deprecated Field is obsolete, use id
          */
-        public string $refid;
+        public ?string $refid;
       `);
     });
 
@@ -409,57 +409,27 @@ describe('PHP', () => {
         expect(result).toBeSimilarStringTo(`
           public ?int $intOpt;
           public ?float $fltOpt;
-          public string $idOpt;
-          public string $strOpt;
+          public ?string $idOpt;
+          public ?string $strOpt;
           public ?bool $boolOpt;
         `);
       });
     });
 
     describe('Array', () => {
-      it('Should use default list type for arrays', async () => {
+      it('Should write comment with inner type for arrays', async () => {
         const schema = buildSchema(/* GraphQL */ `
           input ArrayInput {
             arr: [Int!]
           }
         `);
         const result = await plugin(schema, [], {}, { outputFile: '' });
-        expect(result).toBeSimilarStringTo('public List<int> $arr;');
-      });
-
-      it('Should use custom list type for arrays when listType is specified', async () => {
-        const schema = buildSchema(/* GraphQL */ `
-          input ArrayInput {
-            arr: [Int!]
-          }
-        `);
-        const result1 = await plugin(schema, [], { listType: 'IEnumerable' }, { outputFile: '' });
-        expect(result1).toContain('public IEnumerable<int> $arr;');
-
-        const result2 = await plugin(schema, [], { listType: 'HashSet' }, { outputFile: '' });
-        expect(result2).toContain('public HashSet<int> $arr;');
-      });
-
-      it('Should use correct array inner types', async () => {
-        const schema = buildSchema(/* GraphQL */ `
-          input ArrayInput {
-            arr1: [Int!]
-            arr2: [Float]
-            arr3: [Int]!
-            arr4: [Boolean!]!
-          }
-        `);
-        const config: PhpResolversPluginRawConfig = {
-          listType: 'IEnumerable',
-        };
-        const result = await plugin(schema, [], config, { outputFile: '' });
-
         expect(result).toBeSimilarStringTo(`
-          public IEnumerable<int> $arr1;
-          public IEnumerable<?float> $arr2;
-          public IEnumerable<?int> $arr3;
-          public IEnumerable<bool> $arr4;
-        `);
+        /**
+         * @var array<int>|null
+         */
+        public ?array $arr;
+`);
       });
 
       it('Should handle nested array types', async () => {
@@ -473,15 +443,23 @@ describe('PHP', () => {
             arr3: [[Complex]]!
           }
         `);
-        const config: PhpResolversPluginRawConfig = {
-          listType: 'IEnumerable',
-        };
-        const result = await plugin(schema, [], config, { outputFile: '' });
+        const result = await plugin(schema, [], {}, { outputFile: '' });
 
         expect(result).toBeSimilarStringTo(`
-          public IEnumerable<IEnumerable<int>> $arr1;
-          public IEnumerable<IEnumerable<IEnumerable<?float>>> $arr2;
-          public IEnumerable<IEnumerable<Complex>> $arr3;
+           /**
+            * @var array<array<int>|null>|null
+            */
+           public ?array $arr1;
+
+           /**
+            * @var array<array<array<float|null>>>
+            */
+           public array $arr2;
+
+           /**
+            * @var array<array<Complex|null>|null>
+            */
+           public array $arr3;
         `);
       });
     });
@@ -501,7 +479,7 @@ describe('PHP', () => {
         expect(result).toBeSimilarStringTo(`
           public ?int $int;
           public ?float $float;
-          public string $string;
+          public ?string $string;
           public ?bool $bool;
         `);
       });
@@ -524,15 +502,12 @@ describe('PHP', () => {
           hair: Length! = Short
         }
       `);
-      const config: PhpResolversPluginRawConfig = {
-        listType: 'HashSet',
-      };
-      const result = await plugin(schema, [], config, { outputFile: '' });
+      const result = await plugin(schema, [], {}, { outputFile: '' });
 
       expect(result).toBeSimilarStringTo(`
         public ?int $val;
         public ?float $flt;
-        public string $str;
+        public ?string $str;
         public ?bool $flag;
         public ?Length $hair;
       `);
@@ -547,16 +522,28 @@ describe('PHP', () => {
           arr4: [String!]! = ["a", "b", "c"]
         }
       `);
-      const config: PhpResolversPluginRawConfig = {
-        listType: 'HashSet',
-      };
-      const result = await plugin(schema, [], config, { outputFile: '' });
+      const result = await plugin(schema, [], {}, { outputFile: '' });
 
       expect(result).toBeSimilarStringTo(`
-        public HashSet<?int> $arr1;
-        public HashSet<int> $arr2;
-        public HashSet<string> $arr3;
-        public HashSet<string> $arr4;
+        /**
+         * @var array<int|null>|null
+         */
+        public ?array $arr1;
+
+        /**
+         * @var array<int>|null
+         */
+        public ?array $arr2;
+
+        /**
+         * @var array<string|null>|null
+         */
+        public ?array $arr3;
+
+        /**
+         * @var array<string>|null
+         */
+        public ?array $arr4;
       `);
     });
   });

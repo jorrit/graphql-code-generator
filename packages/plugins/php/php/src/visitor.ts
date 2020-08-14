@@ -31,7 +31,6 @@ import {
   PHP_SCALARS,
   PhpDeclarationBlock,
   transformComment,
-  isValueType,
   getListInnerTypeNode,
   PhpFieldType,
   phpKeywords,
@@ -41,17 +40,15 @@ import {
 
 export interface PhpResolverParsedConfig extends ParsedConfig {
   namespaceName: string;
-  listType: string;
   enumValues: EnumValuesMap;
 }
 
 export class PhpResolversVisitor extends BaseVisitor<PhpResolversPluginRawConfig, PhpResolverParsedConfig> {
   private readonly keywords = new Set(phpKeywords);
 
-  constructor(rawConfig: PhpResolversPluginRawConfig, private _schema: GraphQLSchema, defaultPackageName: string) {
+  constructor(rawConfig: PhpResolversPluginRawConfig, private _schema: GraphQLSchema) {
     super(rawConfig, {
       enumValues: rawConfig.enumValues || {},
-      listType: rawConfig.listType || 'List',
       namespaceName: rawConfig.namespaceName || 'GraphQLCodeGen',
       scalars: buildScalars(_schema, rawConfig.scalars, PHP_SCALARS),
     });
@@ -121,14 +118,24 @@ ${content}
       .withBlock(enumBlock).string;
   }
 
-  getFieldHeader(node: InputValueDefinitionNode | FieldDefinitionNode | EnumValueDefinitionNode): string {
+  getFieldHeader(
+    node: InputValueDefinitionNode | FieldDefinitionNode | EnumValueDefinitionNode,
+    fieldType?: PhpFieldType
+  ): string {
     const commentText = node.description?.value || '';
     const annotations = [];
 
+    // Add deprecated notice.
     const deprecationDirective = node.directives.find(v => v.name?.value === 'deprecated');
     if (deprecationDirective) {
       const deprecationReason = this.getDeprecationReason(deprecationDirective);
       annotations.push(`@deprecated ${deprecationReason}`);
+    }
+
+    // Add type of list.
+    if (fieldType?.listType) {
+      const listType = wrapFieldType(fieldType, fieldType.listType, true);
+      annotations.push(`@var ${listType}`);
     }
 
     return transformComment(
@@ -165,7 +172,6 @@ ${annotations.join('\n')}`.trim()
           baseType: {
             type: baseType,
             required,
-            valueType: isValueType(baseType),
           },
           listType,
         });
@@ -174,7 +180,6 @@ ${annotations.join('\n')}`.trim()
           baseType: {
             type: 'object',
             required,
-            valueType: false,
           },
           listType,
         });
@@ -184,7 +189,6 @@ ${annotations.join('\n')}`.trim()
         baseType: {
           type: `${this.convertName(schemaType.name)}`,
           required,
-          valueType: false,
         },
         listType,
       });
@@ -193,7 +197,6 @@ ${annotations.join('\n')}`.trim()
         baseType: {
           type: this.convertName(schemaType.name),
           required,
-          valueType: true,
         },
         listType,
       });
@@ -202,7 +205,6 @@ ${annotations.join('\n')}`.trim()
         baseType: {
           type: `${schemaType.name}`,
           required,
-          valueType: false,
         },
         listType,
       });
@@ -228,9 +230,9 @@ ${annotations.join('\n')}`.trim()
     const classMembers = inputValueArray
       .map(arg => {
         const fieldType = this.resolveInputFieldType(arg.type);
-        const fieldHeader = this.getFieldHeader(arg);
+        const fieldHeader = this.getFieldHeader(arg, fieldType);
         const fieldName = this.convertSafeName(arg.name);
-        const phpFieldType = wrapFieldType(fieldType, fieldType.listType, this.config.listType);
+        const phpFieldType = wrapFieldType(fieldType, fieldType.listType, false);
         return indentMultiline(`${fieldHeader}public ${phpFieldType} $${fieldName};`);
       })
       .join('\n\n');
@@ -251,9 +253,9 @@ ${classMembers}
     const classMembers = inputValueArray
       .map(arg => {
         const fieldType = this.resolveInputFieldType(arg.type);
-        const fieldHeader = this.getFieldHeader(arg);
+        const fieldHeader = this.getFieldHeader(arg, fieldType);
         const fieldName = this.convertSafeName(arg.name);
-        const phpFieldType = wrapFieldType(fieldType, fieldType.listType, this.config.listType);
+        const phpFieldType = wrapFieldType(fieldType, fieldType.listType, false);
         return indentMultiline(`${fieldHeader}public ${phpFieldType} $${fieldName};`);
       })
       .join('\n\n');
@@ -273,9 +275,9 @@ ${classMembers}
     const classMembers = inputValueArray
       .map(arg => {
         const fieldType = this.resolveInputFieldType(arg.type, !!arg.defaultValue);
-        const fieldHeader = this.getFieldHeader(arg);
+        const fieldHeader = this.getFieldHeader(arg, fieldType);
         const fieldName = this.convertSafeName(arg.name);
-        const phpFieldType = wrapFieldType(fieldType, fieldType.listType, this.config.listType);
+        const phpFieldType = wrapFieldType(fieldType, fieldType.listType, false);
         return indentMultiline(`${fieldHeader}public ${phpFieldType} $${fieldName};`);
       })
       .join('\n\n');

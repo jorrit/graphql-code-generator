@@ -1,14 +1,6 @@
 import { Kind, TypeNode, StringValueNode } from 'graphql';
 import { indent } from '@graphql-codegen/visitor-plugin-common';
-import { phpNativeValueTypes } from './scalars';
 import { ListTypeField, PhpFieldType } from './php-field-types';
-
-export function buildPackageNameFromPath(path: string): string {
-  const unixify = require('unixify');
-  return unixify(path || '')
-    .replace(/src\/main\/.*?\//, '')
-    .replace(/\//g, '.');
-}
 
 export function transformComment(comment: string | StringValueNode, indentLevel = 0): string {
   if (!comment) {
@@ -28,12 +20,6 @@ export function transformComment(comment: string | StringValueNode, indentLevel 
 
 function isStringValueNode(node: any): node is StringValueNode {
   return node && typeof node === 'object' && node.kind === Kind.STRING;
-}
-
-export function isValueType(type: string): boolean {
-  // Limitation: only checks the list of known built in value types
-  // Eg .NET types and struct types won't be detected correctly
-  return phpNativeValueTypes.includes(type);
 }
 
 export function getListTypeField(typeNode: TypeNode): ListTypeField | undefined {
@@ -73,13 +59,29 @@ export function getListInnerTypeNode(typeNode: TypeNode): TypeNode {
 
 export function wrapFieldType(
   fieldType: PhpFieldType,
-  listTypeField?: ListTypeField,
-  listType = 'IEnumerable'
+  listTypeField: ListTypeField | undefined,
+  forComment: boolean
 ): string {
   if (listTypeField) {
-    const innerType = wrapFieldType(fieldType, listTypeField.type, listType);
-    return `${listType}<${innerType}>`;
-  } else {
-    return fieldType.innerTypeName;
+    let typeName = 'array';
+    if (forComment) {
+      typeName = `${typeName}<${wrapFieldType(fieldType, listTypeField.type, true)}>`;
+    }
+
+    return applyNullable(typeName, listTypeField.required, forComment);
   }
+
+  return applyNullable(fieldType.baseType.type, fieldType.baseType.required, forComment);
+}
+
+function applyNullable(typeName: string, required: boolean, forComment: boolean) {
+  if (required) {
+    return typeName;
+  }
+
+  if (forComment) {
+    return `${typeName}|null`;
+  }
+
+  return `?${typeName}`;
 }

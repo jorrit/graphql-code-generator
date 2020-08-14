@@ -31,19 +31,4 @@ export interface PhpResolversPluginRawConfig extends RawConfig {
    * ```
    */
   namespaceName?: string;
-  /**
-   * @default IEnumberable
-   * @description Allow you to customize the list type
-   *
-   * @exampleMarkdown
-   * ```yml
-   * generates:
-   *   src/main/php/my-org/my-app/Types.php:
-   *     plugins:
-   *       - php
-   *     config:
-   *       listType: Map
-   * ```
-   */
-  listType?: string;
 }
