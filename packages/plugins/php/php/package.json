@@ -1,6 +1,6 @@
 {
   "name": "@graphql-codegen/php",
-  "version": "1.17.7",
+  "version": "1.17.8",
   "description": "GraphQL Code Generator plugin for generating PHP code based on a GraphQL schema",
   "repository": "git@github.com:dotansimha/graphql-code-generator.git",
   "license": "MIT",
